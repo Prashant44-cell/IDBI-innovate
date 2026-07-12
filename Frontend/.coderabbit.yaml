@@ -1,0 +1,140 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CodeRabbit Configuration – IDBI Innovate (Fintech Hackathon App)
+# Automates pre-production code review checks via the CodeRabbit VS Code extension.
+# ─────────────────────────────────────────────────────────────────────────────
+
+language: "en-US"
+
+tone_instructions: >
+  You are reviewing a fintech banking app built with Next.js (TypeScript) on the
+  frontend and FastAPI (Python) on the backend. Be strict about security, data
+  handling, and production-readiness. Flag any hardcoded credentials, exposed
+  secrets, missing input validation, CORS wildcards, or unhandled error paths.
+  Be concise and actionable.
+
+reviews:
+  profile: "assertive"
+
+  # Auto-review every file change on every branch
+  auto_review:
+    enabled: true
+    drafts: true
+    base_branches:
+      - "main"
+      - "master"
+      - "develop"
+
+  # ── Abort review if the diff is trivially small ─────────────────────────────
+  abort_on_close: true
+
+  # ── File-level review instructions ──────────────────────────────────────────
+  path_instructions:
+    # ── TypeScript / React (Frontend) ──────────────────────────────────────
+    - path: "Frontend/**/*.{ts,tsx}"
+      instructions: |
+        Review for production readiness with a focus on:
+        1. **Security**: No hardcoded credentials, API keys, or passwords in source code.
+           Flag useState("username") or useState("password") with pre-filled values.
+        2. **Input Validation**: All user inputs (email, password, date, city) must be validated
+           before use. Check for missing validation on form fields.
+        3. **Error Handling**: All async operations and API calls must have try/catch or
+           .catch() handlers. No silent failures.
+        4. **Accessibility**: Ensure interactive elements have proper aria-labels, roles,
+           and keyboard navigation (e.g., onKeyDown handlers on forms).
+        5. **TypeScript Strictness**: No implicit `any` types, no unused imports,
+           no non-null assertions (!) unless absolutely justified.
+        6. **React Best Practices**: Check for missing dependency arrays in useEffect,
+           missing keys in mapped lists, and state mutations.
+        7. **Performance**: Flag large inline functions, unnecessary re-renders,
+           and missing React.memo or useCallback where appropriate.
+        8. **Next.js Specifics**: Ensure 'use client' is present where client-side APIs
+           are used (localStorage, window, Notification). Check for proper Suspense
+           boundaries around useSearchParams().
+
+    # ── CSS / Styles ─────────────────────────────────────────────────────────
+    - path: "Frontend/**/*.css"
+      instructions: |
+        1. Flag duplicate or conflicting CSS variable definitions (e.g., the same token
+           defined in both @theme and :root blocks with different values).
+        2. Ensure the color system is consistent — no mixing of HSL :root variables
+           with Tailwind @theme hex tokens for the same semantic color.
+        3. Check that dark-mode specific variables don't override light-mode values
+           globally without a proper @media (prefers-color-scheme: dark) guard.
+        4. No hardcoded pixel values for font-size where rem is preferred.
+
+    # ── Python Backend (FastAPI) ──────────────────────────────────────────────
+    - path: "Backend/**/*.py"
+      instructions: |
+        Review for production readiness with a focus on:
+        1. **Security**: 
+           - CORS `allow_origins=["*"]` is NOT acceptable for production. Flag it 
+             and suggest specifying exact allowed origins via environment variables.
+           - No hardcoded secrets, DB connection strings, or admin credentials.
+           - All endpoints that modify data must require authentication.
+        2. **Deprecated APIs**: Flag usage of deprecated FastAPI features like
+           `@app.on_event("startup")` — recommend `lifespan` context manager instead.
+        3. **Input Validation**: All request bodies must use Pydantic models.
+           No raw dict parsing without validation.
+        4. **Error Handling**: All DB operations must be wrapped in try/except.
+           Return proper HTTPException responses instead of letting exceptions propagate.
+        5. **Dependency Injection**: Use FastAPI's `Depends()` for DB sessions,
+           auth, and shared resources.
+        6. **Logging**: Use structured logging (not bare print statements).
+        7. **Environment Variables**: Any config value (DB URL, secret key, CORS origins)
+           must be read from environment variables or a config file, not hardcoded.
+
+    # ── Backend Config / Environment ─────────────────────────────────────────
+    - path: "Backend/config.py"
+      instructions: |
+        Ensure all sensitive configuration values are loaded via os.getenv() or
+        pydantic BaseSettings. Flag any hardcoded secrets or connection strings.
+        Verify that .env.example is kept up-to-date with all required variables.
+
+    # ── Requirements / Dependencies ───────────────────────────────────────────
+    - path: "Backend/requirements.txt"
+      instructions: |
+        Check for pinned versions (e.g., `fastapi==0.110.0` not `fastapi`).
+        Flag unpinned or very outdated dependencies that may have known CVEs.
+        Recommend `pip-audit` or `safety` for vulnerability scanning.
+
+    # ── Frontend Package ──────────────────────────────────────────────────────
+    - path: "Frontend/package.json"
+      instructions: |
+        Flag packages with `*` or `latest` as version constraints — they should
+        be pinned to exact or tilde ranges for reproducible builds.
+        Check that devDependencies are not listed under dependencies.
+
+    # ── README / Documentation ────────────────────────────────────────────────
+    - path: "*.md"
+      instructions: |
+        Check for grammar, clear structure, and accuracy.
+        Ensure setup instructions include all required environment variables.
+        Flag any exposed credentials or internal-only information that shouldn't
+        be in a public README.
+
+  # ── Paths to SKIP reviewing ──────────────────────────────────────────────────
+  path_filters:
+    - "!**/node_modules/**"
+    - "!**/.next/**"
+    - "!**/venv/**"
+    - "!**/__pycache__/**"
+    - "!**/.git/**"
+    - "!**/dist/**"
+    - "!**/build/**"
+    - "!**/*.lock"
+    - "!**/package-lock.json"
+
+# ── Chat / Interactive Review ─────────────────────────────────────────────────
+chat:
+  auto_reply: true
+
+# ── Knowledge Base ────────────────────────────────────────────────────────────
+knowledge_base:
+  learnings:
+    scope: local  # keep learnings scoped to this repo only
+  issues:
+    scope: local
+  pull_requests:
+    scope: local

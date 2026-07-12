@@ -1,0 +1,61 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# IDBI Innovate – .gitignore
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Environment / Secrets ─────────────────────────────────────────────────────
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+*.pem
+*.key
+*.crt
+
+# ── Next.js (Frontend) ───────────────────────────────────────────────────────
+Frontend/.next/
+Frontend/out/
+Frontend/build/
+Frontend/node_modules/
+Frontend/.vercel/
+Frontend/.turbo/
+Frontend/npm-debug.log*
+Frontend/yarn-debug.log*
+Frontend/yarn-error.log*
+Frontend/*.tsbuildinfo
+
+# ── Python / FastAPI (Backend) ───────────────────────────────────────────────
+Backend/__pycache__/
+Backend/**/__pycache__/
+Backend/*.pyc
+Backend/*.pyo
+Backend/*.pyd
+Backend/.Python
+Backend/venv/
+Backend/env/
+Backend/.venv/
+Backend/dist/
+Backend/build/
+Backend/*.egg-info/
+Backend/.pytest_cache/
+Backend/.mypy_cache/
+Backend/.ruff_cache/
+Backend/htmlcov/
+Backend/.coverage
+Backend/coverage.xml
+
+# ── Database / Generated Files ────────────────────────────────────────────────
+DB/*.sqlite3
+DB/*.db
+
+# ── Root node_modules (if any) ───────────────────────────────────────────────
+node_modules/
+
+# ── OS / Editor ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+*.log
